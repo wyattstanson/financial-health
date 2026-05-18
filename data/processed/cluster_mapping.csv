@@ -1,0 +1,101 @@
+company_id,company_name,sector,cluster,cluster_label,dbscan_cluster
+1,Company_1,Pharma,0,High Margin,-1
+2,Company_2,Auto,4,High Margin,0
+3,Company_3,FMCG,5,High Margin,-1
+4,Company_4,Auto,6,Balanced,-1
+5,Company_5,Auto,4,High Margin,-1
+6,Company_6,Banking,1,High Leverage,-1
+7,Company_7,FMCG,0,High Margin,1
+8,Company_8,FMCG,2,High Leverage,0
+9,Company_9,FMCG,0,High Margin,1
+10,Company_10,Auto,6,Balanced,-1
+11,Company_11,Pharma,3,Balanced,-1
+12,Company_12,FMCG,6,Balanced,-1
+13,Company_13,Energy,3,Balanced,-1
+14,Company_14,Auto,7,"Stable Dividend, Moderate Growth",-1
+15,Company_15,Banking,2,High Leverage,0
+16,Company_16,Pharma,5,High Margin,-1
+17,Company_17,Energy,3,Balanced,-1
+18,Company_18,Energy,3,Balanced,0
+19,Company_19,Banking,1,High Leverage,0
+20,Company_20,Pharma,7,"Stable Dividend, Moderate Growth",-1
+21,Company_21,Auto,0,High Margin,-1
+22,Company_22,IT,0,High Margin,1
+23,Company_23,Pharma,4,High Margin,-1
+24,Company_24,Banking,3,Balanced,0
+25,Company_25,Energy,0,High Margin,-1
+26,Company_26,Auto,6,Balanced,-1
+27,Company_27,Pharma,5,High Margin,-1
+28,Company_28,IT,5,High Margin,-1
+29,Company_29,IT,2,High Leverage,0
+30,Company_30,FMCG,4,High Margin,0
+31,Company_31,FMCG,5,High Margin,-1
+32,Company_32,Banking,6,Balanced,-1
+33,Company_33,Pharma,1,High Leverage,-1
+34,Company_34,Pharma,3,Balanced,-1
+35,Company_35,Energy,6,Balanced,-1
+36,Company_36,Energy,2,High Leverage,-1
+37,Company_37,Energy,0,High Margin,0
+38,Company_38,FMCG,0,High Margin,-1
+39,Company_39,Pharma,1,High Leverage,0
+40,Company_40,Pharma,2,High Leverage,0
+41,Company_41,IT,5,High Margin,-1
+42,Company_42,FMCG,2,High Leverage,-1
+43,Company_43,Auto,4,High Margin,0
+44,Company_44,FMCG,1,High Leverage,-1
+45,Company_45,Auto,4,High Margin,0
+46,Company_46,IT,2,High Leverage,-1
+47,Company_47,Banking,5,High Margin,0
+48,Company_48,Pharma,2,High Leverage,0
+49,Company_49,IT,7,"Stable Dividend, Moderate Growth",0
+50,Company_50,Pharma,2,High Leverage,0
+51,Company_51,Energy,1,High Leverage,0
+52,Company_52,Banking,7,"Stable Dividend, Moderate Growth",-1
+53,Company_53,Banking,2,High Leverage,0
+54,Company_54,IT,5,High Margin,-1
+55,Company_55,Banking,7,"Stable Dividend, Moderate Growth",-1
+56,Company_56,Auto,4,High Margin,0
+57,Company_57,Banking,1,High Leverage,0
+58,Company_58,Pharma,6,Balanced,-1
+59,Company_59,Pharma,3,Balanced,0
+60,Company_60,Pharma,2,High Leverage,0
+61,Company_61,Pharma,0,High Margin,-1
+62,Company_62,Auto,4,High Margin,0
+63,Company_63,FMCG,0,High Margin,0
+64,Company_64,Energy,5,High Margin,-1
+65,Company_65,IT,1,High Leverage,0
+66,Company_66,Pharma,4,High Margin,0
+67,Company_67,Banking,3,Balanced,0
+68,Company_68,Pharma,5,High Margin,1
+69,Company_69,Banking,4,High Margin,0
+70,Company_70,Energy,2,High Leverage,0
+71,Company_71,Energy,0,High Margin,1
+72,Company_72,Energy,3,Balanced,-1
+73,Company_73,Banking,5,High Margin,-1
+74,Company_74,Pharma,7,"Stable Dividend, Moderate Growth",-1
+75,Company_75,Energy,1,High Leverage,0
+76,Company_76,Auto,6,Balanced,-1
+77,Company_77,Banking,2,High Leverage,0
+78,Company_78,Banking,1,High Leverage,0
+79,Company_79,Pharma,1,High Leverage,-1
+80,Company_80,Banking,2,High Leverage,-1
+81,Company_81,Banking,6,Balanced,-1
+82,Company_82,Energy,4,High Margin,0
+83,Company_83,Pharma,1,High Leverage,0
+84,Company_84,Energy,2,High Leverage,1
+85,Company_85,Energy,4,High Margin,-1
+86,Company_86,Pharma,2,High Leverage,0
+87,Company_87,IT,4,High Margin,0
+88,Company_88,Energy,2,High Leverage,0
+89,Company_89,Auto,3,Balanced,-1
+90,Company_90,Auto,7,"Stable Dividend, Moderate Growth",-1
+91,Company_91,Banking,5,High Margin,-1
+92,Company_92,Auto,4,High Margin,-1
+93,Company_93,Banking,4,High Margin,-1
+94,Company_94,IT,0,High Margin,-1
+95,Company_95,Pharma,2,High Leverage,0
+96,Company_96,Pharma,7,"Stable Dividend, Moderate Growth",0
+97,Company_97,Pharma,4,High Margin,-1
+98,Company_98,Auto,4,High Margin,0
+99,Company_99,IT,0,High Margin,1
+100,Company_100,Auto,3,Balanced,0
