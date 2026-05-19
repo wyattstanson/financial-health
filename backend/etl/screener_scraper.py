@@ -46,12 +46,13 @@ COMPANIES = [
 SESSION = requests.Session()
 
 def extract_year(col_header):
-    """Extract year from 'Mar 2024', 'Jun 2023', 'TTM' etc"""
+    """Extract year from 'Mar 2024', 'Jun 2023' etc — ignore TTM and future years"""
     match = re.search(r'(20\d{2})', str(col_header))
     if match:
-        return int(match.group(1))
+        yr = int(match.group(1))
+        if 2010 <= yr <= 2025:  # Only valid years
+            return yr
     return None
-
 def clean_number(val):
     try:
         cleaned = str(val).replace(',', '').replace('%', '').replace('₹', '').strip()
@@ -150,7 +151,7 @@ def get_company_data(symbol, company_id):
         year_cols = [c for c in pl_df.columns if extract_year(c)]
         for col in year_cols:
             yr = extract_year(col)
-            row_map = dict(zip(pl_df.iloc[:, 0].str.strip(), pl_df[col]))
+            row_map = dict(zip(pl_df.iloc[:, 0].str.replace('\xa0', '', regex=False).str.strip(), pl_df[col]))
             pl_rows.append({
                 'company_id':          company_id,
                 'year_id':             yr,
@@ -237,18 +238,23 @@ if __name__ == "__main__":
     # ── Save to DB
     print("\nSaving to DB...")
 
-    # Years table
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("TRUNCATE dim_year CASCADE"))
+        conn.execute(text("TRUNCATE dim_company CASCADE"))
+        conn.commit()
+
     yr_df = pd.DataFrame({
         'year_id':    list(range(2010, 2026)),
         'year_label': [str(y) for y in range(2010, 2026)],
         'year_date':  pd.date_range('2010-03-31', periods=16, freq='YE')
     })
-    yr_df.to_sql('dim_year', engine, if_exists='replace', index=False)
+    yr_df.to_sql('dim_year', engine, if_exists='append', index=False)
 
-    pd.DataFrame(all_companies).to_sql('dim_company',       engine, if_exists='append', index=False)
-    pd.DataFrame(all_pl).to_sql('fact_profit_loss',          engine, if_exists='append', index=False)
-    pd.DataFrame(all_bs).to_sql('fact_balance_sheet',        engine, if_exists='append', index=False)
-    pd.DataFrame(all_cf).to_sql('fact_cash_flow',            engine, if_exists='append', index=False)
+    pd.DataFrame(all_companies).to_sql('dim_company',    engine, if_exists='append', index=False)
+    pd.DataFrame(all_pl).to_sql('fact_profit_loss',      engine, if_exists='append', index=False)
+    pd.DataFrame(all_bs).to_sql('fact_balance_sheet',    engine, if_exists='append', index=False)
+    pd.DataFrame(all_cf).to_sql('fact_cash_flow',        engine, if_exists='append', index=False)
 
     print(f"\n✅ Done!")
     print(f"   Companies : {len(all_companies)}")
