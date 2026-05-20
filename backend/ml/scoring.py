@@ -21,7 +21,6 @@ def get_engine():
         f"/{os.getenv('DB_NAME')}"
     )
 
-# ── Scoring functions (mirrors Notebook 2)
 def score_profitability(df):
     return (df['avg_opm'].rank(pct=True) * 25).clip(0, 25)
 
@@ -31,11 +30,15 @@ def score_revenue_growth(df):
     )
 
 def score_leverage(df):
-    return ((1 - df['latest_de'].clip(0, 2) / 2) * 20).clip(0, 20)
+    # Interest coverage > 5 = healthy, < 1 = poor
+    return df['interest_coverage'].apply(
+        lambda x: min(x / 5 * 20, 20)
+    ).clip(0, 20)
 
 def score_cashflow(df):
-    return df['avg_ccr'].fillna(0).apply(
-        lambda x: min(x / 1.2 * 15, 15)
+    # ROA proxy — higher is better
+    return df['roa_proxy'].apply(
+        lambda x: min(x * 100, 15)
     ).clip(0, 15)
 
 def score_dividend(df):
@@ -62,15 +65,16 @@ def load_metrics(engine):
             c.company_id,
             c.company_name,
             c.sector,
-            AVG(pl.opm_pct)              AS avg_opm,
-            AVG(pl.dividend_payout_pct)  AS avg_dividend,
-            AVG(bs.debt_to_equity)       AS latest_de,
-            AVG(cf.operating_activity / NULLIF(pl.net_profit, 0)) AS avg_ccr
+            AVG(pl.opm_pct)                          AS avg_opm,
+            AVG(pl.operating_profit)                 AS avg_op,
+            AVG(pl.interest)                         AS avg_interest,
+            AVG(bs.total_assets)                     AS avg_assets,
+            AVG(bs.equity_capital + bs.reserves)     AS avg_equity,
+            AVG(pl.dividend_payout_pct)              AS avg_dividend
         FROM dim_company c
         LEFT JOIN fact_profit_loss pl   ON c.company_id = pl.company_id
         LEFT JOIN fact_balance_sheet bs ON c.company_id = bs.company_id
-        LEFT JOIN fact_cash_flow cf     ON c.company_id = cf.company_id
-                                       AND cf.year_id   = pl.year_id
+                                       AND bs.year_id   = pl.year_id
         GROUP BY c.company_id, c.company_name, c.sector
     """
     df = pd.read_sql(query, engine)
@@ -83,12 +87,29 @@ def load_metrics(engine):
     """, engine)
 
     trend = pd.read_sql("""
-        SELECT company_id, trend_slope
+        SELECT company_id, norm_slope AS trend_slope
         FROM fact_trend_labels
     """, engine)
 
     df = df.merge(cagr, on='company_id', how='left')
     df = df.merge(trend, on='company_id', how='left')
+
+    # Derived metrics from available data
+    df['avg_opm']      = pd.to_numeric(df['avg_opm'], errors='coerce').fillna(0)
+    df['avg_op']       = pd.to_numeric(df['avg_op'], errors='coerce').fillna(0)
+    df['avg_interest'] = pd.to_numeric(df['avg_interest'], errors='coerce').fillna(0)
+    df['avg_assets']   = pd.to_numeric(df['avg_assets'], errors='coerce').fillna(1)
+    df['avg_equity']   = pd.to_numeric(df['avg_equity'], errors='coerce').fillna(1)
+    df['avg_dividend'] = pd.to_numeric(df['avg_dividend'], errors='coerce').fillna(0)
+    df['cagr_3y']      = pd.to_numeric(df['cagr_3y'], errors='coerce').fillna(0)
+    df['trend_slope']  = pd.to_numeric(df['trend_slope'], errors='coerce').fillna(0)
+
+    # Interest coverage ratio (proxy for leverage)
+    df['interest_coverage'] = df['avg_op'] / df['avg_interest'].replace(0, 1)
+
+    # Return on assets proxy
+    df['roa_proxy'] = df['avg_op'] / df['avg_assets']
+
     return df
 
 # ── Main scoring function

@@ -90,18 +90,53 @@ def load_company_metrics(engine):
         SELECT
             c.company_id,
             c.company_name,
-            AVG(bs.debt_to_equity)          AS latest_de,
-            AVG(pl.dividend_payout_pct)     AS avg_dividend,
-            AVG(cf.operating_activity / NULLIF(pl.net_profit, 0)) AS avg_ccr,
-            AVG(pl.operating_profit / NULLIF(pl.interest, 0))     AS interest_coverage
+            AVG(pl.opm_pct)              AS avg_opm,
+            AVG(pl.operating_profit)     AS avg_op,
+            AVG(pl.interest)             AS avg_interest,
+            AVG(pl.dividend_payout_pct)  AS avg_dividend,
+            AVG(bs.total_assets)         AS avg_assets,
+            AVG(bs.equity_capital + bs.reserves) AS avg_equity
         FROM dim_company c
         LEFT JOIN fact_profit_loss   pl ON c.company_id = pl.company_id
         LEFT JOIN fact_balance_sheet bs ON c.company_id = bs.company_id
-        LEFT JOIN fact_cash_flow     cf ON c.company_id = cf.company_id
-                                      AND cf.year_id    = pl.year_id
+                                       AND bs.year_id   = pl.year_id
         GROUP BY c.company_id, c.company_name
     """
-    return pd.read_sql(query, engine)
+    df = pd.read_sql(query, engine)
+
+    # fact_analysis se CAGR
+    cagr = pd.read_sql("""
+        SELECT company_id,
+               MAX(CASE WHEN period_label='3Y' THEN value_pct END) AS cagr_3y,
+               MAX(CASE WHEN period_label='5Y' THEN value_pct END) AS cagr_5y,
+               MAX(CASE WHEN period_label='10Y' THEN value_pct END) AS cagr_10y
+        FROM fact_analysis
+        WHERE metric = 'compounded_sales_growth'
+        GROUP BY company_id
+    """, engine)
+
+    trend = pd.read_sql("""
+        SELECT company_id, norm_slope AS trend_slope, trend_label
+        FROM fact_trend_labels
+    """, engine)
+
+    df = df.merge(cagr, on='company_id', how='left')
+    df = df.merge(trend, on='company_id', how='left')
+
+    # Numeric conversion
+    for col in ['avg_opm','avg_op','avg_interest','avg_dividend',
+                'avg_assets','avg_equity','cagr_3y','cagr_5y','cagr_10y','trend_slope']:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
+    # Derived metrics
+    df['interest_coverage'] = df['avg_op'] / df['avg_interest'].replace(0, 1)
+    df['latest_de'] = (df['avg_assets'] - df['avg_equity']) / df['avg_equity'].replace(0, 1)
+    df['avg_roe_3y'] = df['avg_op'] / df['avg_equity'].replace(0, 1) * 100
+    df['profit_cagr_3y'] = df['cagr_3y']
+    df['opm_improving_3y'] = df['trend_slope'] > 0.05
+    df['opm_declining_3y'] = df['trend_slope'] < -0.05
+
+    return df
 
 def generate_all():
     log.info("Generating pros/cons for all companies...")
